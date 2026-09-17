@@ -114,7 +114,9 @@ function open(i){const s=SHOPS[i];const c=catOf(s.cat);const sheet=document.getE
   ${s.thin?`<div class="acts" style="margin-top:0"><a href="${IG_ME}" target="_blank" rel="noopener" style="grid-column:1/-1">✉️ この店を知っている人、DMで教えてください</a></div>`:''}
   <div class="note">※2026年9月時点の情報です。営業時間・定休日・席数は変わることがあるので、行く前にお店へご確認ください。祭り当日は混み合います。</div>`;
  sheet.classList.add('open'); sheet.scrollTop=0;
- const m=markers.get(i); if(m){map.panTo([s.lat,s.lon]);}
+ // シートの裏にピンが隠れないよう、見えている地図部分(シートより上)の中央にピンを置く
+ const z=map.getZoom(), sh=Math.min(sheet.offsetHeight, map.getSize().y*0.7), pt=map.project([s.lat,s.lon],z).add([0,sh/2-30]);
+ map.panTo(map.unproject(pt,z));
  document.getElementById('list').classList.remove('open');}
 document.getElementById('close').onclick=()=>document.getElementById('sheet').classList.remove('open');
 map.on('click',()=>document.getElementById('sheet').classList.remove('open'));
@@ -129,5 +131,5 @@ document.getElementById('btnSt').onclick=()=>map.setView(ST,16);
 document.getElementById('btnHere').onclick=()=>{if(!navigator.geolocation)return alert('位置情報が使えません');navigator.geolocation.getCurrentPosition(p=>{const ll=[p.coords.latitude,p.coords.longitude];L.circleMarker(ll,{radius:8,color:'#fff',weight:2,fillColor:'#2f80ed',fillOpacity:1}).addTo(map);map.setView(ll,16);},()=>alert('位置情報を取得できませんでした'));};
 render();
 // #店名 で直接その店を開く(ストーリーズ等からの共有用)
-(function(){const h=decodeURIComponent(location.hash.slice(1));if(!h)return;const i=SHOPS.findIndex(s=>s.name===h||s.name.includes(h));if(i>=0){setTimeout(()=>{map.setView([SHOPS[i].lat,SHOPS[i].lon],17);open(i);},300);}})();
+(function(){const h=decodeURIComponent(location.hash.slice(1));if(!h)return;const i=SHOPS.findIndex(s=>s.name===h||s.name.includes(h));if(i>=0){setTimeout(()=>{map.setView([SHOPS[i].lat,SHOPS[i].lon],17,{animate:false});open(i);},300);}})();
 </script></body></html>
